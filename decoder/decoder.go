@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	//	matrix "github.com/skelterjohn/go.matrix"
 	"log"
-	//	"math"
+	"math/big"
 	"os"
-	"strconv"
+	//	"strconv"
 	"strings"
 )
 
@@ -14,95 +13,93 @@ var (
 	logger *log.Logger
 )
 
-// type key struct {
-// 	index int
-// 	d     int
-// }
-
 func main() {
 	logger = log.New(os.Stderr, "logger:", log.Lshortfile)
-	prime, err := strconv.ParseInt(os.Args[1], 10, 64)
-	if err != nil {
-		logger.Fatal("ParseInt conversion, prime")
-	}
 
+	// parse prime in input
+	prime := ParseRat(os.Args[1])
+
+	// parse keys in input
 	args := os.Args[2:]
-	keys := make([]struct{ x, y float64 }, len(args))
+	keys := make([]struct{ x, y *big.Rat }, len(args))
 	for i := 0; i < len(keys); i++ {
 		pair := strings.Split(args[i], ":")
 
-		index, err := strconv.ParseFloat(pair[0], 64) // index
-		if err != nil {
-			logger.Fatal("ParseFloat conversion, index")
-		}
+		index := ParseRat(pair[0])
+		d := ParseRat(pair[1])
 
-		d, err := strconv.ParseFloat(pair[1], 64) // d
-		if err != nil {
-			logger.Fatal("ParseFloat conversion, d")
-		}
 		keys[i].x = index
 		keys[i].y = d
-		// keys[i] = key{
-		// 	index,
-		// 	d,
-		// }
 	}
 
-	answer := int64(lagrange(keys, prime)) //% prime
+	answer := lagrange(keys, prime)
 
-	//	answer := linearAlgebra(keys)
-	fmt.Printf("Prime: %d\n", prime)
-	fmt.Printf("Before mod: %d\n", answer)
-	fmt.Printf("Message is: %d\n", answer%prime)
+	// p, exact := prime.Float64()
+	// if !exact {
+	// 	log.Fatal("Prime is not exact")
+	// }
+
+	//	fmt.Printf("Prime: %f\n", p)
+	fmt.Printf("Message is: %d\n", answer.Int64())
 }
 
 // Determine value at x=0 by Lagrange Interpolation
-func lagrange(keys []struct{ x, y float64 }, prime int64) (sum float64) {
-	sum = 0
+func lagrange(keys []struct{ x, y *big.Rat }, prime *big.Rat) *big.Int {
+	sum := big.NewInt(0)
 	k := len(keys)
 
 	for j := 0; j < k; j++ {
-		var product int64 = 1
+		product := new(big.Rat)
+		product.SetInt64(1)
+
 		for m := 0; m < k; m++ {
 			if m != j {
-				product *= int64((0 - keys[m].x) / (keys[j].x - keys[m].x))
+
+				temp := new(big.Rat)
+				temp.Sub(big.NewRat(0, 1), keys[m].x)
+
+				temp2 := new(big.Rat)
+				temp2.Sub(keys[j].x, keys[m].x)
+
+				temp3 := new(big.Rat)
+				temp3.Quo(temp, temp2)
+
+				temp4 := new(big.Rat)
+				product.Set(temp4.Mul(product, temp3))
 			}
 		}
-		fmt.Println(product * int64(keys[j].y))
-		sum += float64(product * int64(keys[j].y) % prime)
+
+		fmt.Printf("key[j]: %v\n", keys[j].y)
+		temp5 := new(big.Rat)
+		product.Set(temp5.Mul(product, keys[j].y))
+
+		fmt.Printf("product: %v\n", product)
+
+		// prod64, exact := product.Float64()
+		// if !exact {
+		// 	log.Print("Product is not exact")
+		// }
+
+		// prime64, exact := prime.Float64()
+		// if !exact {
+		// 	log.Print("Product is not exact")
+		// }
+
+		addMe := product.Num() //new(big.Int)
+		//addMe.Mod(big.NewInt(int64(prod64)), big.NewInt(int64(prime64)))
+		sum.Add(sum, addMe)
+		fmt.Printf("sum: %v\n", sum)
 	}
 
-	return
+	return sum
 }
 
-// func linearAlgebra(keys []struct{ x, y int }) float64 {
-// 	// make A
-// 	mat := make([][]float64, len(keys))
-// 	for row := range mat {
-// 		mat[row] = make([]float64, len(keys))
-// 	}
+func ParseRat(s string) *big.Rat {
+	i := new(big.Rat)
+	_, success := i.SetString(s)
+	if !success {
+		logger.Fatal("SetString failed in: ParseRat")
+	}
 
-// 	for row := 0; row < len(mat); row++ {
-// 		myKey := keys[row]
-// 		for col := range mat {
-// 			mat[row][col] = math.Pow(float64(myKey.x), float64(col))
-// 		}
-// 	}
-// 	a := matrix.MakeDenseMatrixStacked(mat)
-
-// 	// make B
-// 	ds := make([]float64, len(keys))
-// 	for i := 0; i < len(keys); i++ {
-// 		ds[i] = float64(keys[i].y)
-// 	}
-// 	b := matrix.MakeDenseMatrix(ds, len(keys), 1)
-
-// 	inverse, err := a.Inverse()
-// 	if err != nil {
-// 		logger.Fatal("Inverse error")
-// 	}
-
-// 	coeffs := matrix.Product(inverse, b).Array()
-
-// 	return coeffs[0]
-// }
+	return i
+}

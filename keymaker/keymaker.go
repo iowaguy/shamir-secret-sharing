@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"math/big"
 	"math/rand"
 	"os"
 	"strconv"
@@ -37,7 +38,7 @@ func main() {
 	ds := make([]int64, n+1)
 	tmpN := int(n)
 	for i := 0; i < tmpN+1; i++ {
-		ds[i] = poly(coeffs, i, p) % p //WHY DOESNT THIS WORK!
+		ds[i] = poly(coeffs, i, p) // % p //WHY DOESNT THIS WORK!
 	}
 
 	for i := 1; i < len(ds); i++ {
@@ -46,25 +47,30 @@ func main() {
 }
 
 // TODO choose a random prime greater than min
-// find the next prime greater than min
+// find the next prime greater than min using the Miller-Rabin primality test
 func prime(min int64) int64 {
 	// find next prime larger than min
 	for i := min + 1; true; i++ {
-		isPrime := true
-		for j := i / 2; j > 1; j-- {
-			if i%j == 0 {
-				isPrime = false
-				break
-			}
-		}
+		bi := big.NewInt(i)
 
-		if isPrime {
-			fmt.Printf("prime: %d\n", i)
+		// TODO: see if decoding the message is faster than manually verifying primality
+		if bi.ProbablyPrime(10) { // && verifyPrimality(i) { // primality verification for large numbers is SLOOOOOWWWWW
+			fmt.Printf("Prime: %d\n", i)
 			return i
 		}
 	}
 
 	return -1
+}
+
+func verifyPrimality(num int64) bool {
+	for j := num / 2; j > 1; j-- {
+		if num%j == 0 {
+			return false
+		}
+	}
+
+	return true
 }
 
 func kRand(k, p int64) (coeffs []int64) {
