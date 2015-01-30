@@ -5,7 +5,6 @@ import (
 	"log"
 	"math/big"
 	"os"
-	//	"strconv"
 	"strings"
 )
 
@@ -34,12 +33,6 @@ func main() {
 
 	answer := lagrange(keys, prime)
 
-	// p, exact := prime.Float64()
-	// if !exact {
-	// 	log.Fatal("Prime is not exact")
-	// }
-
-	//	fmt.Printf("Prime: %f\n", p)
 	fmt.Printf("Message is: %d\n", answer.Int64())
 }
 
@@ -75,18 +68,8 @@ func lagrange(keys []struct{ x, y *big.Rat }, prime *big.Rat) *big.Int {
 
 		fmt.Printf("product: %v\n", product)
 
-		// prod64, exact := product.Float64()
-		// if !exact {
-		// 	log.Print("Product is not exact")
-		// }
-
-		// prime64, exact := prime.Float64()
-		// if !exact {
-		// 	log.Print("Product is not exact")
-		// }
-
 		addMe := product.Num() //new(big.Int)
-		//addMe.Mod(big.NewInt(int64(prod64)), big.NewInt(int64(prime64)))
+
 		sum.Add(sum, addMe)
 		fmt.Printf("sum: %v\n", sum)
 	}
