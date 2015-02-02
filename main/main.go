@@ -59,7 +59,7 @@ func main() {
 			keys[i].Yr = d
 		}
 
-		sss.Decode(keys)
+		fmt.Printf("Message is: %s", sss.Decode(keys))
 	}
 
 }

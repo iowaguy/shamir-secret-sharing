@@ -1,7 +1,6 @@
 package sss
 
 import (
-	"fmt"
 	"log"
 	"math"
 	. "math/big"
@@ -19,7 +18,7 @@ func MakeKeys(dStr string, kIn, nIn int) ([]Key, *Int) {
 
 	zero := NewInt(0)
 	if k.Cmp(zero) <= 0 || n.Cmp(zero) <= 0 || k.Cmp(n) >= 0 {
-		logger.Fatal("Incorrect inputs")
+		logger.Fatalf("Incorrect inputs:\nk=%d\nn=%d\n", k, n)
 	}
 
 	min := new(Int)
@@ -49,12 +48,8 @@ func MakeKeys(dStr string, kIn, nIn int) ([]Key, *Int) {
 		keys[i-1].Yi = ds[i]
 		keys[i-1].K = kIn
 		keys[i-1].fillRats()
-
-		// REMOVE THIS
-		fmt.Printf("%d:%d:%v\n", i, k, ds[i])
 	}
 
-	fmt.Printf("prime:%d\n", p)
 	return keys, p
 }
 

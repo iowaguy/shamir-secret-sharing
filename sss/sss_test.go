@@ -9,9 +9,9 @@ import (
 )
 
 func TestMakeKeys(t *testing.T) {
-	inMessage := makeMessage()
-	k := 6
-	n := 11
+	kMax := 8
+	nMax := 15
+	inMessage, k, n := makeParams(kMax, nMax)
 	keys, prime := MakeKeys(inMessage, k, n)
 	outMessage := Decode(keys, prime)
 
@@ -22,9 +22,17 @@ func TestMakeKeys(t *testing.T) {
 	}
 }
 
-func makeMessage() string {
+func makeParams(kMax, nMax int) (message string, k, n int) {
 	source := rand.NewSource(int64(time.Now().Nanosecond()))
 	r := rand.New(source)
 	randoCalrissian := r.Int63()
-	return strconv.FormatInt(randoCalrissian, 10)
+	message = strconv.FormatInt(randoCalrissian, 10)
+	for {
+		k = r.Int() % kMax
+		n = r.Int() % nMax
+
+		if k < n && k != 0 && n != 0 {
+			return
+		}
+	}
 }

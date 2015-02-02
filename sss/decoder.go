@@ -1,7 +1,6 @@
 package sss
 
 import (
-	"fmt"
 	"log"
 	. "math/big"
 	"os"
@@ -10,7 +9,6 @@ import (
 func Decode(keys []Key, prime *Int) string {
 	logger = log.New(os.Stderr, "logger:", log.Lshortfile)
 	code := lagrange(keys, 0, prime)
-	fmt.Printf("Message is: %v\n", code)
 
 	return code.String()
 }
