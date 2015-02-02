@@ -1,4 +1,4 @@
-package main
+package sss
 
 import (
 	"fmt"
@@ -14,28 +14,22 @@ var (
 	logger *log.Logger
 )
 
-func main() {
+func MakeKeys(data, k, n *Int) []Key {
 	logger = log.New(os.Stderr, "logger:", log.Lshortfile)
-	args := os.Args
-	data := ParseInt(args[1])
 
-	k := ParseInt(args[2])
-	n := ParseInt(args[3])
+	zero := NewInt(0)
+	if k.Cmp(zero) <= 0 || n.Cmp(zero) <= 0 || k.Cmp(n) >= 0 {
+		logger.Fatal("Incorrect inputs")
+	}
 
-	// TODO fix this for math/big
-	// if k <= 0 || n <= 0 || k >= n {
-	// 	fmt.Println("Incorrect inputs")
-	// }
+	min := new(Int)
+	if data.Cmp(n) == 1 {
+		min.Set(data)
+	} else {
+		min.Set(n)
+	}
 
-	// TODO fix this for math/big
-	// var min int64 = 0
-	// if data > n {
-	// 	min = data
-	// } else {
-	// 	min = n
-	// }
-
-	p := prime(data)
+	p := prime(min)
 
 	// get k-1 random ints between [0,p)
 	coeffs := kRand(k, p)
@@ -49,9 +43,15 @@ func main() {
 		ds[i] = poly(coeffs, i, p)
 	}
 
+	keys := make([]Key, len(ds)-1)
 	for i := 1; i < len(ds); i++ {
+		keys[i-1].Xi = NewInt(int64(i))
+		keys[i-1].Yi = ds[i]
+		keys[i-1].fillRats()
 		fmt.Printf("%d:%d\n", i, ds[i])
 	}
+
+	return keys
 }
 
 // TODO choose a random prime greater than min
@@ -66,7 +66,7 @@ func prime(min *Int) *Int {
 
 		// TODO: see if decoding the message is faster than manually verifying primality
 		if i.ProbablyPrime(10) { // && verifyPrimality(i) { // primality verification for large numbers is SLOOOOOWWWWW
-			fmt.Printf("Prime: %v\n", i)
+			//			fmt.Printf("Prime: %v\n", i)
 			return i
 		}
 	}
@@ -106,19 +106,8 @@ func poly(coeffs []*Int, x int, prime *Int) *Int {
 	for i := 0; i < max; i++ {
 		term := new(Int)
 		term.Mul(coeffs[i], NewInt(int64(math.Pow(float64(x), float64(i)))))
-		//term.Set(term.Mod(term, prime))
 		d.Set(d.Add(d, term))
 	}
 
 	return d
-}
-
-func ParseInt(s string) *Int {
-	i := new(Int)
-	_, success := i.SetString(s, 10)
-	if !success {
-		logger.Fatal("SetString failed in: ParseInt")
-	}
-
-	return i
 }
