@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -16,17 +17,34 @@ func main() {
 	logger = log.New(os.Stderr, "logger:", log.Lshortfile)
 	args := os.Args
 
+	if len(args) < 3 {
+		logger.Fatal("incorrect number of args")
+	}
+
 	if args[1] == "-k" || args[1] == "k" {
-		// TODO error check for correct # of params
-		data := parseInt(args[2])
-		k := parseInt(args[3])
-		n := parseInt(args[4])
+		if len(args) != 5 {
+			logger.Fatal("incorrect number of args")
+		}
+
+		data, err := strconv.Atoi(args[2])
+		if err != nil {
+			logger.Fatal("error in data Atoi")
+		}
+
+		k, err := strconv.Atoi(args[3])
+		if err != nil {
+			logger.Fatal("error in k Atoi")
+		}
+
+		n, err := strconv.Atoi(args[4])
+		if err != nil {
+			logger.Fatal("error in n Atoi")
+		}
+
 		sss.MakeKeys(data, k, n)
 	} else if args[1] == "-d" || args[1] == "d" {
-		// TODO error check for correct # of params
-
 		// parse prime in input
-		//		prime := parseRat(args[2])
+		//	prime := parseRat(args[2])
 
 		// parse keys in input
 		inKeys := args[2:]
@@ -34,8 +52,8 @@ func main() {
 		for i := 0; i < len(keys); i++ {
 			pair := strings.Split(inKeys[i], ":")
 
-			index := parseRat(pair[0])
-			d := parseRat(pair[1])
+			index := utils.ParseRat(pair[0])
+			d := utils.ParseRat(pair[1])
 
 			keys[i].Xr = index
 			keys[i].Yr = d
@@ -44,24 +62,4 @@ func main() {
 		sss.Decode(keys)
 	}
 
-}
-
-func parseInt(s string) *big.Int {
-	i := new(big.Int)
-	_, success := i.SetString(s, 10)
-	if !success {
-		logger.Fatal("SetString failed in: ParseInt")
-	}
-
-	return i
-}
-
-func parseRat(s string) *big.Rat {
-	i := new(big.Rat)
-	_, success := i.SetString(s)
-	if !success {
-		logger.Fatal("SetString failed in: parseRat")
-	}
-
-	return i
 }

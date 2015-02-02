@@ -10,12 +10,12 @@ import (
 	"time"
 )
 
-var (
-	logger *log.Logger
-)
-
-func MakeKeys(data, k, n *Int) []Key {
+func MakeKeys(dStr string, kIn, nIn int) ([]Key, *Int) {
 	logger = log.New(os.Stderr, "logger:", log.Lshortfile)
+
+	data := parseBigInt(dStr)
+	k := NewInt(int64(kIn))
+	n := NewInt(int64(nIn))
 
 	zero := NewInt(0)
 	if k.Cmp(zero) <= 0 || n.Cmp(zero) <= 0 || k.Cmp(n) >= 0 {
@@ -47,11 +47,15 @@ func MakeKeys(data, k, n *Int) []Key {
 	for i := 1; i < len(ds); i++ {
 		keys[i-1].Xi = NewInt(int64(i))
 		keys[i-1].Yi = ds[i]
+		keys[i-1].K = kIn
 		keys[i-1].fillRats()
-		fmt.Printf("%d:%d\n", i, ds[i])
+
+		// REMOVE THIS
+		fmt.Printf("%d:%d:%v\n", i, k, ds[i])
 	}
 
-	return keys
+	fmt.Printf("prime:%d\n", p)
+	return keys, p
 }
 
 // TODO choose a random prime greater than min
@@ -62,11 +66,8 @@ func prime(min *Int) *Int {
 	i := new(Int)
 
 	for i.Add(min, one); true; i.Set(i.Add(i, one)) {
-		//		bi := NewInt(i)
-
 		// TODO: see if decoding the message is faster than manually verifying primality
-		if i.ProbablyPrime(10) { // && verifyPrimality(i) { // primality verification for large numbers is SLOOOOOWWWWW
-			//			fmt.Printf("Prime: %v\n", i)
+		if i.ProbablyPrime(10) {
 			return i
 		}
 	}
@@ -74,6 +75,7 @@ func prime(min *Int) *Int {
 	return NewInt(-1)
 }
 
+// primality verification for large numbers is SLOOOOOWWWWW
 func verifyPrimality(num int64) bool {
 	for j := num / 2; j > 1; j-- {
 		if num%j == 0 {

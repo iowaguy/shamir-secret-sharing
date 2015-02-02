@@ -15,15 +15,18 @@
 - [ ] send keys to emails
 - [ ] choose how many keys get sent to a particular email
 
-*** 3rd iteration [0/1]
-- [ ] Allow users to email in keys and return decoded message when critical number of keys is sent in
-
 ** Decode keys [0/3]
+*** 1st iteration [0/3]
 - [ ] Create user input fields for decoding
 - [ ] Accept user input
 - [ ] Return decoded message
 
-* split message; multiple key sets
+*** 2nd iteration [0/1]
+- [ ] Allow users to email in keys and return decoded message when critical number of keys is sent in
+
+
+* split message
+- [ ] multiple key sets
 
 * Bugs
 - [ ] Sometimes doesn't work with non-consectutive keys

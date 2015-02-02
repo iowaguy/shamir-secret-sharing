@@ -7,24 +7,30 @@ import (
 	"os"
 )
 
-func Decode(keys []Key) {
+func Decode(keys []Key, prime *Int) string {
 	logger = log.New(os.Stderr, "logger:", log.Lshortfile)
-	answer := lagrange(keys, 0)
-	fmt.Printf("Message is: %v\n", answer)
+	code := lagrange(keys, 0, prime)
+	fmt.Printf("Message is: %v\n", code)
+
+	return code.String()
 }
 
 // Multi-precision Lagrange Interpolation
-func lagrange(keys []Key, n int64) *Int {
-	sum := NewInt(0)
-	k := len(keys)
+func lagrange(keys []Key, n int64, prime *Int) *Int {
 
+	if len(keys) < 1 {
+		logger.Fatal("not enough keys")
+	}
+	k := keys[0].K
+
+	sum := NewInt(0)
 	for j := 0; j < k; j++ {
 		product := new(Rat)
 		product.SetInt64(1)
 
 		for m := 0; m < k; m++ {
 			if m != j {
-
+				// TODO might be able to reuse some of these temps
 				temp := new(Rat)
 				temp.Sub(NewRat(n, 1), keys[m].Xr)
 
@@ -35,12 +41,17 @@ func lagrange(keys []Key, n int64) *Int {
 				temp3.Quo(temp, temp2)
 
 				temp4 := new(Rat)
-				product.Set(temp4.Mul(product, temp3))
+				temp4.Mul(product, temp3)
+
+				// temp5 := new(Int)
+				// temp5.Mod(product.Num(), prime)
+
+				product.Set(temp4)
 			}
 		}
 
-		temp5 := new(Rat)
-		product.Set(temp5.Mul(product, keys[j].Yr))
+		temp6 := new(Rat)
+		product.Set(temp6.Mul(product, keys[j].Yr))
 
 		addMe := product.Num()
 		sum.Add(sum, addMe)
