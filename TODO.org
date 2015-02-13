@@ -1,10 +1,13 @@
 * Testing
-- [ ] Create some test cases
+- [X] Create a basic blackbox test
+- [X] Test non-consecutive, unsorted keys
+- [ ] Make cli test
 
-* verify primality
-- [ ] probably just decoding the message is faster than actual primality verification
+* Core functionality
+- [X] Verify primality
+- [ ] Split message, multiple key sets
 
-* web interface
+* Web interface
 ** Make keys
 *** 1st iteration [0/3]
 - [ ] Create user input fields for making keys
@@ -25,8 +28,6 @@
 - [ ] Allow users to email in keys and return decoded message when critical number of keys is sent in
 
 
-* split message
-- [ ] multiple key sets
-
 * Bugs
-- [ ] Sometimes doesn't work with non-consectutive keys
+- [X] Sometimes doesn't work with non-consectutive keys
+- [X] Program will loop infinitely if miller-rabin falsly reports prime, because the same number will continue to be chosen as the prime. Need to store the prime, and make sure the next prime starts from previousPrime+1.

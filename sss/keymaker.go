@@ -9,10 +9,10 @@ import (
 	"time"
 )
 
-func MakeKeys(dStr string, kIn, nIn int) ([]Key, *Int) {
+func MakeKeys(dStr string, kIn, nIn int) []Key {
 	logger = log.New(os.Stderr, "logger:", log.Lshortfile)
 
-	data := parseBigInt(dStr)
+	data := ParseBigInt(dStr)
 	k := NewInt(int64(kIn))
 	n := NewInt(int64(nIn))
 
@@ -28,29 +28,38 @@ func MakeKeys(dStr string, kIn, nIn int) ([]Key, *Int) {
 		min.Set(n)
 	}
 
-	p := prime(min)
+	p := new(Int)
+	p.Set(min)
+	for {
+		// need to reset p to avoid infinite loop for primality false positives
+		p.Set(prime(p))
 
-	// get k-1 random ints between [0,p)
-	coeffs := kRand(k, p)
-	coeffs[0] = data
+		// get k-1 random ints between [0,p)
+		coeffs := kRand(k, p)
+		coeffs[0] = data
 
-	// calculate Ds
-	// TODO randomly choose indices
-	ds := make([]*Int, n.Int64()+1)
-	tmpN := int(n.Int64())
-	for i := 0; i < tmpN+1; i++ {
-		ds[i] = poly(coeffs, i, p)
+		// calculate Ds
+		// TODO randomly choose indices
+		ds := make([]*Int, n.Int64()+1)
+		tmpN := int(n.Int64())
+		for i := 0; i < tmpN+1; i++ {
+			ds[i] = poly(coeffs, i, p)
+		}
+
+		keys := make([]Key, len(ds)-1)
+		for i := 1; i < len(ds); i++ {
+			keys[i-1].Xi = NewInt(int64(i))
+			keys[i-1].Yi = ds[i]
+			keys[i-1].K = kIn
+			keys[i-1].Prime = p
+			keys[i-1].FillRats()
+		}
+
+		// Verifying primality by making sure keys work
+		if dStr == Decode(keys) {
+			return keys
+		}
 	}
-
-	keys := make([]Key, len(ds)-1)
-	for i := 1; i < len(ds); i++ {
-		keys[i-1].Xi = NewInt(int64(i))
-		keys[i-1].Yi = ds[i]
-		keys[i-1].K = kIn
-		keys[i-1].fillRats()
-	}
-
-	return keys, p
 }
 
 // TODO choose a random prime greater than min
@@ -61,24 +70,12 @@ func prime(min *Int) *Int {
 	i := new(Int)
 
 	for i.Add(min, one); true; i.Set(i.Add(i, one)) {
-		// TODO: see if decoding the message is faster than manually verifying primality
 		if i.ProbablyPrime(10) {
 			return i
 		}
 	}
 
 	return NewInt(-1)
-}
-
-// primality verification for large numbers is SLOOOOOWWWWW
-func verifyPrimality(num int64) bool {
-	for j := num / 2; j > 1; j-- {
-		if num%j == 0 {
-			return false
-		}
-	}
-
-	return true
 }
 
 func kRand(k, p *Int) (coeffs []*Int) {
@@ -91,7 +88,7 @@ func kRand(k, p *Int) (coeffs []*Int) {
 	for i := 1; i < tmpK; i++ {
 		rando := new(Int)
 		rando.Rand(r, p)
-		coeffs[i] = rando // % p
+		coeffs[i] = rando
 	}
 
 	return

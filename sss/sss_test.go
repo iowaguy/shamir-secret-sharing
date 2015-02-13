@@ -8,12 +8,15 @@ import (
 	"time"
 )
 
-func TestMakeKeys(t *testing.T) {
+// End to end test, including unsorted, non-consecutive keys
+func TestEnd2End(t *testing.T) {
 	kMax := 8
 	nMax := 15
+
 	inMessage, k, n := makeParams(kMax, nMax)
-	keys, prime := MakeKeys(inMessage, k, n)
-	outMessage := Decode(keys, prime)
+	keys := MakeKeys(inMessage, k, n)
+	subset := chooseRandomKeys(keys)
+	outMessage := Decode(subset)
 
 	if inMessage != outMessage {
 		fmt.Printf("Input message: %s\n", inMessage)
@@ -31,8 +34,54 @@ func makeParams(kMax, nMax int) (message string, k, n int) {
 		k = r.Int() % kMax
 		n = r.Int() % nMax
 
-		if k < n && k != 0 && n != 0 {
+		if k < n && k > 0 && n > 0 {
 			return
 		}
 	}
+}
+
+func chooseLargestKeys(keys []Key) []Key {
+	subset := make([]Key, keys[0].K)
+	for i := 0; i < keys[0].K; i++ {
+		subset[i] = keys[len(keys)-keys[0].K+i]
+	}
+
+	return subset
+}
+
+func chooseLargestKeysBackwardsSkipOne(keys []Key) []Key {
+	subset := make([]Key, keys[0].K)
+	j := 0
+	for i := 0; i < keys[0].K; i++ {
+		if i == 1 {
+			j++
+		}
+		subset[i] = keys[len(keys)-1-j]
+		j++
+	}
+
+	return subset
+}
+
+func chooseRandomKeys(keys []Key) []Key {
+	source := rand.NewSource(int64(time.Now().Nanosecond()))
+	r := rand.New(source)
+
+	n := len(keys)
+
+	subset := make([]Key, keys[0].K)
+	used := make([]bool, n)
+	for i := 0; i < keys[0].K; i++ {
+		rando := r.Int()
+		index := rando % n
+
+		if used[index] {
+			i -= 1
+		} else {
+			used[index] = true
+			subset[i] = keys[index]
+		}
+	}
+
+	return subset
 }
