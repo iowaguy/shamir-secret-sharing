@@ -1,6 +1,7 @@
 package sss
 
 import (
+	"fmt"
 	"log"
 	"math/big"
 )
@@ -13,17 +14,16 @@ type Key struct {
 	Xr, Yr *big.Rat
 	Xi, Yi *big.Int
 	K      int
+	Prime  *big.Int
 }
 
-func (k *Key) fillInts() {
+func (k *Key) FillInts() {
 	k.Xi = new(big.Int)
-	k.Xi = k.Xr.Num()
-
 	k.Yi = new(big.Int)
-	k.Yi = k.Yr.Num()
+	k.Xi, k.Yi = k.Xr.Num(), k.Yr.Num()
 }
 
-func (k *Key) fillRats() {
+func (k *Key) FillRats() {
 	k.Xr = new(big.Rat)
 	k.Xr.SetInt(k.Xi)
 
@@ -31,7 +31,22 @@ func (k *Key) fillRats() {
 	k.Yr.SetInt(k.Yi)
 }
 
-func parseBigInt(s string) *big.Int {
+func (k *Key) String() string {
+	return fmt.Sprintf("%d:%d:%d:%d", k.K, k.Prime, k.Xi, k.Yi)
+}
+
+///////////// For sorting //////////
+type Keys []Key
+
+func (k Keys) Len() int { return len(k) }
+
+func (k Keys) Swap(i, j int) { k[i], k[j] = k[j], k[i] }
+
+func (k Keys) Less(i, j int) bool { return k[i].Xi.Cmp(k[j].Xi) == -1 }
+
+////////////////////////////////////
+
+func ParseBigInt(s string) *big.Int {
 	i := new(big.Int)
 	_, success := i.SetString(s, 10)
 	if !success {
