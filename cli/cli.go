@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"kn-threshold/sss"
 	"log"
 	"os"
+	"shamir-secret-sharing/sss"
 	"strconv"
 	"strings"
 )
