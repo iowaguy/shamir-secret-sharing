@@ -25,6 +25,23 @@ func TestEnd2End(t *testing.T) {
 	}
 }
 
+func TestColumn(t *testing.T) {
+	kMax := 8
+	nMax := 15
+
+	inMessage, k, n := makeParams(kMax, nMax)
+	keys := MakeKeys(inMessage, k, n)
+	//subset := chooseRandomKeys(keys)
+	outMessage := Decode(subset)
+
+	if inMessage != outMessage {
+		fmt.Printf("Input message: %s\n", inMessage)
+		fmt.Printf("Output message: %s\n", outMessage)
+		t.Fail()
+	}
+
+}
+
 func makeParams(kMax, nMax int) (message string, k, n int) {
 	source := rand.NewSource(int64(time.Now().Nanosecond()))
 	r := rand.New(source)

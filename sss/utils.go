@@ -1,7 +1,7 @@
 package sss
 
 import (
-	"fmt"
+	//	"fmt"
 	"log"
 	"math/big"
 )
@@ -11,10 +11,10 @@ var (
 )
 
 type Key struct {
+	K      int
 	Xr, Yr *big.Rat
 	Xi, Yi *big.Int
-	K      int
-	Prime  *big.Int
+	//	Prime  *big.Int
 }
 
 func (k *Key) FillInts() {
@@ -31,9 +31,9 @@ func (k *Key) FillRats() {
 	k.Yr.SetInt(k.Yi)
 }
 
-func (k *Key) String() string {
-	return fmt.Sprintf("%d:%d:%d:%d", k.K, k.Prime, k.Xi, k.Yi)
-}
+// func (k *Key) String() string {
+// 	return fmt.Sprintf("%d:%d:%d:%d", k.K, k.Prime, k.Xi, k.Yi)
+// }
 
 ///////////// For sorting //////////
 type Keys []Key

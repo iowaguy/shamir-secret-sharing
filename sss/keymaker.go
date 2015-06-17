@@ -1,17 +1,62 @@
 package sss
 
 import (
+	"bytes"
 	"log"
 	"math"
 	. "math/big"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 )
 
-func MakeKeys(dStr string, kIn, nIn int) []Key {
+func MakeKeys(data string, k, n int) (keys []string) {
 	logger = log.New(os.Stderr, "logger:", log.Lshortfile)
 
+	substrs, _ := splitter(data, 8)
+
+	keys = make([]string, n)
+	keyGrid := make([][]string, n)
+	for i := 0; i < n; i++ {
+		keyGrid[i] = make([]string, len(substrs))
+	}
+
+	for i, subSecret := range substrs {
+		kSet := keySet(subSecret, k, n)
+		for j, subKey := range kSet {
+			keyGrid[j][i] = subKey
+		}
+	}
+
+	return combiner(keyGrid, k)
+}
+
+func splitter(dStr string, sliceSize int) (substrs []string, pieces int) {
+	size := len(dStr) / sliceSize
+	if len(dStr)%sliceSize != 0 {
+		size += 1
+	}
+	substrs = make([]string, size)
+	pieces = len(substrs)
+	begin := 0
+	for i := range substrs {
+		var end int
+		if len(dStr)-begin < sliceSize {
+			end = len(dStr)
+		} else {
+			end = begin + sliceSize
+		}
+
+		substrs[i] = dStr[begin:end]
+
+		begin += sliceSize
+	}
+
+	return
+}
+
+func keySet(dStr string, kIn, nIn int) (column []string) {
 	data := ParseBigInt(dStr)
 	k := NewInt(int64(kIn))
 	n := NewInt(int64(nIn))
@@ -39,26 +84,16 @@ func MakeKeys(dStr string, kIn, nIn int) []Key {
 		coeffs[0] = data
 
 		// calculate Ds
-		// TODO randomly choose indices
-		ds := make([]*Int, n.Int64()+1)
-		tmpN := int(n.Int64())
-		for i := 0; i < tmpN+1; i++ {
-			ds[i] = poly(coeffs, i, p)
-		}
-
-		keys := make([]Key, len(ds)-1)
-		for i := 1; i < len(ds); i++ {
-			keys[i-1].Xi = NewInt(int64(i))
-			keys[i-1].Yi = ds[i]
-			keys[i-1].K = kIn
-			keys[i-1].Prime = p
-			keys[i-1].FillRats()
+		column = make([]string, nIn)
+		for i := 1; i <= nIn; i++ {
+			column[i-1] = poly(coeffs, i, p).String()
 		}
 
 		// Verifying primality by making sure keys work
-		if dStr == Decode(keys) {
-			return keys
-		}
+		//if dStr == DecodeColumn(kIn, column) {
+		return column
+		//}
+
 	}
 }
 
@@ -104,4 +139,21 @@ func poly(coeffs []*Int, x int, prime *Int) *Int {
 	}
 
 	return d
+}
+
+func combiner(keyGrid [][]string, k int) (keys []string) {
+	keys = make([]string, len(keyGrid))
+	for i, row := range keyGrid {
+		var buffer bytes.Buffer
+		buffer.WriteString(strconv.Itoa(k))
+		buffer.WriteString(":")
+		buffer.WriteString(strconv.Itoa(i + 1))
+		for _, cell := range row {
+			buffer.WriteString(":")
+			buffer.WriteString(cell)
+		}
+		keys[i] = buffer.String()
+	}
+
+	return
 }
