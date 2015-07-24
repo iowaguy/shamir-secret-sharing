@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"shamir-secret-sharing/sss"
+	"github.com/iowaguy/shamir-secret-sharing/sss"
 	"strconv"
 	//	"strings"
 )
@@ -26,6 +26,10 @@ func main() {
 		logger.Fatal("incorrect args")
 	}
 
+
+
+	
+	// clean up using "flag" package
 	if args[1] == "-k" {
 
 		if len(args) != 5 {
@@ -45,13 +49,17 @@ func main() {
 			logger.Fatal("error in n Atoi")
 		}
 
-		keys := sss.MakeKeys(args[2], true, k, n)
+		keys := sss.MakeKeys(args[2], k, n)
 		for _, key := range keys {
 			fmt.Println(key)
 		}
 	} else if args[1] == "-d" {
 		// parse keys in input
-		// inKeys := args[2:]
+		inKeys := args[2:]
+
+		fmt.Printf("Message is: %s\n", sss.Decode(inKeys))
+
+
 		// keys := make([]sss.Key, len(inKeys))
 		// for i := 0; i < len(keys); i++ {
 		// 	info := strings.Split(inKeys[i], ":")
@@ -73,7 +81,7 @@ func main() {
 		// 	keys[i].FillInts()
 		// }
 
-		// fmt.Printf("Message is: %s\n", sss.Decode(keys))
+		
 
 	}
 
