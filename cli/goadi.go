@@ -6,7 +6,6 @@ import (
 	"os"
 	"github.com/iowaguy/shamir-secret-sharing/sss"
 	"strconv"
-	//	"strings"
 )
 
 var (
@@ -14,7 +13,7 @@ var (
 )
 
 func printUsage(name string) {
-	fmt.Printf("Usage: %s [-k <data> <subset_size> <# of keys>] [-d <prime> <keys>... ]\n", name)
+	fmt.Printf("Usage: %s [-k <data> <subset_size> <# of keys>] [-d <keys>... ]\n", name)
 }
 
 func main() {
@@ -26,9 +25,6 @@ func main() {
 		logger.Fatal("incorrect args")
 	}
 
-
-
-	
 	// clean up using "flag" package
 	if args[1] == "-k" {
 
@@ -56,33 +52,7 @@ func main() {
 	} else if args[1] == "-d" {
 		// parse keys in input
 		inKeys := args[2:]
-
 		fmt.Printf("Message is: %s\n", sss.Decode(inKeys))
-
-
-		// keys := make([]sss.Key, len(inKeys))
-		// for i := 0; i < len(keys); i++ {
-		// 	info := strings.Split(inKeys[i], ":")
-
-		// 	k, err := strconv.Atoi(info[0])
-		// 	if err != nil {
-		// 		printUsage(args[0])
-		// 		logger.Fatalf("error in k Atoi, decoder. k=%s\n", info[0])
-		// 	}
-
-		// 	prime := sss.ParseBigInt(info[1])
-		// 	index := sss.ParseRat(info[2])
-		// 	d := sss.ParseRat(info[3])
-
-		// 	keys[i].Xr = index
-		// 	keys[i].Yr = d
-		// 	//			keys[i].Prime = prime
-		// 	keys[i].K = k
-		// 	keys[i].FillInts()
-		// }
-
-		
-
 	}
 
 }
